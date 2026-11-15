@@ -38,7 +38,7 @@ def hedge_pnl_and_cost(
     delivered) without cost and the payoff is paid, so
         P&L = X(T) - (S(T) - K)^+ = cash_T + Delta(t_{n-1}) S(T) - (S(T) - K)^+.
     The Deltas use the hedge volatility `sigma_h`, which is `sigma_price` unless a
-    different value is passed (the wrong-volatility case of E2).
+    different value is passed (the wrong-volatility case).
 
     Args:
         S_paths: array (n_paths, n_steps + 1) of S(t_i) on a uniform grid over [0, T].
@@ -201,7 +201,7 @@ def pathwise_pnl_formula(S_paths: np.ndarray, K, r: float, sigma_h, T: float) ->
     0.5 C_xx [(Delta S)^2 - sigma_h^2 S^2 Delta t_i] with the sign of the seller's P&L reversed, so
         P&L = 0.5 sum_i exp(r (T - t_i)) S(t_i)^2 C_xx(t_i, S(t_i)) [sigma_h^2 Delta t_i - (ln S(t_{i+1}) / S(t_i))^2],
     with C_xx the BSM gamma at sigma_h. Each step's squared return is weighted by the
-    dollar gamma of that step, unlike the constant-sigma formula of E2, which replaces
+    dollar gamma of that step, unlike the constant-sigma wrong-volatility formula, which replaces
     every squared return by one window-average sigma^2 Delta t. It needs no assumption
     about the true volatility, so it holds for any path, but it is a second-order
     expansion and fails when a single step has a large move.

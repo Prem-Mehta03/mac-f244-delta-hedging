@@ -8,13 +8,13 @@ Author: Mehta Prem (2024ADPS0851G). Instructor: Mayank Goel.
 
 Black-Scholes-Merton (BSM) says a European option can be replicated perfectly by continuously holding Delta shares. This project measures how large and how risky the hedging error becomes when each assumption is relaxed:
 
-- discrete rebalancing (E1)
-- wrong hedge volatility (E2)
-- Heston stochastic volatility (E3) and Merton jumps (E4), hedged with BSM deltas
-- proportional transaction costs, compared with Leland's scaling (E5)
-- strike and maturity, compared with the gamma profile (E6)
+- discrete rebalancing
+- wrong hedge volatility
+- Heston stochastic volatility and Merton jumps, hedged with BSM deltas
+- proportional transaction costs, compared with Leland's scaling
+- strike and maturity, compared with the gamma profile
 
-The simulations are then compared with a rolling delta-hedge backtest on real market data (E7).
+The simulations are then compared with a rolling delta-hedge backtest on real listed NIFTY 50 options (NSE data, 2015 to 2026).
 
 ## Layout
 
@@ -22,11 +22,10 @@ The simulations are then compared with a rolling delta-hedge backtest on real ma
 | --- | --- |
 | `src/` | BSM formulas, path simulators, hedging engine, costs, backtest, plotting helpers |
 | `experiments/` | One thin script per experiment (`e1_...` to `e7_...`) |
-| `tests/` | Sanity checks (BSM values, put-call parity, GBM moments) |
+| `tests/` | Sanity checks (BSM values, put-call parity, GBM moments, hedging formulas) |
 | `data/` | Downloaded market data (NIFTY and India VIX closes, NSE option prices) and `SOURCE.md` with sources and download dates |
 | `results/` | Generated figures and tables |
-| `notes/` | `theory_notes.md`, the theory behind each step |
-| `notebooks/` | Final notebook, built last |
+| `notebooks/` | Final notebook that re-runs every experiment |
 | `report/` | LaTeX report (`report.tex`) and its compiled PDF |
 
 ## How to run
@@ -39,8 +38,6 @@ python experiments/e1_rebalancing.py
 
 Each experiment script saves its figure and table under `results/`. Random seeds are fixed, so results are reproducible.
 
-`notebooks/final_notebook.ipynb` re-runs every experiment from top to bottom (about 3 minutes) with the theory notes, figures, tables and interpretations inline. Open it in Jupyter or VS Code and run all cells.
+`notebooks/final_notebook.ipynb` re-runs every experiment from top to bottom (about 3 minutes) with the figures, tables and interpretations inline. Open it in Jupyter or VS Code and run all cells.
 
-## Status
-
-Code, experiments E1 to E7, tests, theory notes, report (`report/report.tex`, compiled to `report/report.pdf`) and the final notebook are done. The market data source and download date are in `data/SOURCE.md`. The E7 backtest uses real listed NSE option prices on NIFTY 50 (2015 to 2026, 372 windows), with a baseline that prices the same options at India VIX.
+The report is `report/report.tex`; `pdflatex report.tex`, run twice from inside `report/`, rebuilds `report/report.pdf`.

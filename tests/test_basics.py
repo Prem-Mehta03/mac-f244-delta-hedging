@@ -114,7 +114,7 @@ def test_gbm_mean_and_variance():
 
 
 def test_brownian_increment_squared_has_variance_two_dt_squared():
-    """(Delta W)^2 has mean Delta t and variance 2 (Delta t)^2, the source of the sqrt(Delta t) law of E1."""
+    """(Delta W)^2 has mean Delta t and variance 2 (Delta t)^2, the source of the sqrt(Delta t) law."""
     dt = 0.01
     dW = np.sqrt(dt) * np.random.default_rng(9).standard_normal(2_000_000)
     assert (dW**2).mean() == pytest.approx(dt, rel=0.01)

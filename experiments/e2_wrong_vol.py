@@ -1,4 +1,4 @@
-"""E2: hedging with the wrong volatility.
+"""Hedging with the wrong volatility.
 
 The stock follows GBM with true volatility sigma. The seller sells the call
 and computes Deltas with sigma_h = ratio * sigma, with ratio from 0.5 to 1.5.
@@ -26,7 +26,7 @@ SEED = 42
 
 
 def main() -> None:
-    """Run E2, print the comparison table, save the table and two figures."""
+    """Run the experiment: print the comparison table, save the table and two figures."""
     rng = np.random.default_rng(SEED)
     paths = gbm_paths(S0, R, SIGMA, T, N_STEPS, N_PATHS, rng)
 
@@ -59,7 +59,7 @@ def main() -> None:
     ax.axhline(0, color="gray", lw=0.8)
     ax.set_xlabel("hedge volatility / true volatility")
     ax.set_ylabel("mean P&L of the seller")
-    ax.set_title("E2: mean hedging P&L vs hedge volatility")
+    ax.set_title("Mean hedging P&L vs hedge volatility")
     ax.legend()
     save_figure(fig, "e2_mean_pnl")
 
@@ -68,7 +68,7 @@ def main() -> None:
         ax.hist(pnls[ratio], bins=80, histtype="step", density=True, label=f"{ratio:g} sigma")
     ax.set_xlabel("P&L of the seller")
     ax.set_ylabel("density")
-    ax.set_title("E2: P&L distribution by hedge volatility")
+    ax.set_title("P&L distribution by hedge volatility")
     ax.legend(title="sigma_h")
     save_figure(fig, "e2_distribution")
 

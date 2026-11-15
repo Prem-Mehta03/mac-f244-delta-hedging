@@ -1,4 +1,4 @@
-"""E3: delta hedging with BSM when the stock follows Heston stochastic volatility.
+"""Delta hedging with BSM when the stock follows Heston stochastic volatility.
 
 The Heston variance V(t) starts at V(0) = a_V / beta = sigma^2 = 0.04, so the average
 variance matches the BSM volatility used for the premium and the Deltas (20%).
@@ -47,7 +47,7 @@ def heston_pnl(xi: float, rho: float, n_steps: int) -> np.ndarray:
 
 
 def main() -> None:
-    """Run E3, print and save the summary table, save the figures."""
+    """Run the experiment: print and save the summary table, save the figures."""
     rng = np.random.default_rng(SEED)
     gbm = hedge_pnl(gbm_paths(S0, R, SIGMA, T, N_STEPS, N_PATHS, rng), K, R, SIGMA, T)
 
@@ -82,7 +82,7 @@ def main() -> None:
     ax.set_xlim(-8, 6)
     ax.set_xlabel("P&L of the seller")
     ax.set_ylabel("density")
-    ax.set_title(f"E3: hedging P&L under Heston, n = {N_STEPS}")
+    ax.set_title(f"Hedging P&L under Heston, n = {N_STEPS}")
     ax.legend()
     save_figure(fig, "e3_distribution")
 
@@ -91,7 +91,7 @@ def main() -> None:
     ax.loglog(n_table["N"], n_table["heston_std"], "s-", label=f"Heston (xi={BASE_XI}, rho={BASE_RHO})")
     ax.set_xlabel("rebalancing dates n")
     ax.set_ylabel("std of hedging P&L")
-    ax.set_title("E3: residual error does not vanish under Heston")
+    ax.set_title("Residual error does not vanish under Heston")
     ax.legend()
     save_figure(fig, "e3_std_vs_n")
 

@@ -8,3 +8,6 @@ __pycache__/
 *.out
 *.toc
 *.synctex.gz
+
+# personal reference notes, kept locally only
+notes/

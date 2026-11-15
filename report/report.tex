@@ -25,11 +25,10 @@
 \title{Delta Hedging of European Options under Model Misspecification:\\
 Hedging Error Analysis, Transaction Costs and Empirical Backtesting}
 \author{Mehta Prem (2024ADPS0851G)\\
-B.E.\ (Hons.) Mathematics and Computing\\
+B.E. Mathematics and Computing\\
 BITS Pilani K K Birla Goa Campus}
 \date{MAC F244, Stochastic Calculus and Application to Finance\\
-Instructor: Mayank Goel\\
-Individual project, 15 November 2026}
+15 November 2026}
 
 \begin{document}
 \normalsize
@@ -39,14 +38,14 @@ Individual project, 15 November 2026}
 %--------------------------------------------------------------------
 \section{Introduction to the problem}
 
-In the Black--Scholes--Merton (BSM) model a European option can be copied exactly by holding $\Delta(t)$ shares of the stock and adjusting that holding continuously \cite{bs73,merton73,hull}. This is why the option has a unique price, and why a seller who hedges this way carries no risk. Real markets break the model in three ways: we can only trade at discrete times, trading costs money, and the stock does not follow geometric Brownian motion (GBM) with a known, constant volatility.
+In the Black-Scholes-Merton (BSM) model a European option can be replicated exactly by holding $\Delta(t)$ shares of the stock and adjusting that holding continuously \cite{bs73,merton73,hull}. That replicability gives the option a unique price and makes a seller who hedges this way risk-free. Real markets break the model in three ways: we can only trade at discrete times, trading costs money, and the stock does not follow geometric Brownian motion (GBM) with a known, constant volatility.
 
 This project asks how large the hedging error becomes when each of these assumptions is relaxed, and how it behaves statistically. The hedger is the seller of an at-the-money call, and the hedging error is the profit and loss (P\&L) of the hedged position at maturity. We answer four questions:
 \begin{enumerate}
-  \item \textbf{Discrete rebalancing.} How does the standard deviation of the P\&L shrink as the number of rebalancing dates $n$ grows? Does it follow $\sqrt{\Delta t}$?
-  \item \textbf{Wrong volatility.} If the hedger uses a volatility $\sigma_h$ different from the true $\sigma$, what is the P\&L, and does it match the known formula?
-  \item \textbf{Wrong dynamics.} If the true stock follows a stochastic-volatility model (Heston) or has jumps (Merton) but the hedger still uses BSM Deltas, how do the bias, variance and tail risk change?
-  \item \textbf{Transaction costs.} With proportional costs, which rebalancing frequency minimises the total risk, and does it match Leland's scaling?
+  \item Discrete rebalancing: how does the standard deviation of the P\&L shrink as the number of rebalancing dates $n$ grows, and does it follow $\sqrt{\Delta t}$?
+  \item Wrong volatility: if the hedger uses a volatility $\sigma_h$ different from the true $\sigma$, what is the P\&L, and does it match the known formula?
+  \item Wrong dynamics: if the true stock follows a stochastic-volatility model (Heston) or has jumps (Merton) but the hedger still uses BSM Deltas, how do the bias, variance and tail risk change?
+  \item Transaction costs: with proportional costs, which rebalancing frequency minimises the total risk, and does it match Leland's scaling?
 \end{enumerate}
 We then compare the simulations with a historical delta-hedging backtest on real NIFTY~50 options.
 
@@ -96,22 +95,24 @@ In the Merton model \cite{merton76} the stock also jumps: $\mathrm{d}S/S=(\alpha
 \subsection{Numerical methodology}
 
 All code is in Python (NumPy, SciPy, pandas), vectorised over 20{,}000 paths with a fixed seed and a test suite. The base case is $S_0=K=100$, $\alpha=r=5\%$, $\sigma=20\%$, $T=1$.
-\begin{itemize}
-  \item \textbf{Simulation.} GBM and Merton are sampled exactly. For Heston we use full-truncation Euler for the variance \cite{lord10} on a fine grid of 1{,}008 steps, subsampled to the hedging dates, with $\beta=2$, $a_V=0.08$, $V(0)=0.04$. Merton's diffusion variance is reduced so that total variance stays $0.04$; differences from GBM then come from the shape of the distribution, not its level. With 20{,}000 paths the Monte Carlo standard error (bootstrap over the paths) is about 0.7\% of the standard deviation and 1--2\% of the ES (Heston $\xi=0.4$: $1.95\pm0.014$ and $4.86\pm0.066$), but the skewness is only good to $\pm0.04$ to $\pm0.09$ and the excess kurtosis to $\pm0.24$ (Heston) or $\pm1.3$ (Merton), so we do not read small differences in skewness or kurtosis.
-  \item \textbf{Hedging engine and risk measures.} The seller receives $C(0,S_0)$, holds $\Delta(t_i)=C_x$ shares, and finances all trades (and costs) in the money market, so P\&L $=X(T)-(S(T)-K)^+$. We report the mean (bias), standard deviation, skewness, kurtosis, and the 5\% value-at-risk and expected shortfall (ES) of the loss.
-  \item \textbf{Backtest.} Prices of NIFTY index call options come from the NSE F\&O bhavcopy files for every trading day from January 2015 to November 2026 \cite{nse}, and the NIFTY~50 path from Yahoo Finance \cite{yahoo}. On each date with an NSE expiry exactly 20 trading days ahead, we sell the traded call nearest the money (strike within 1\% of spot) at its listed closing price, hedge it daily ($n=20$) or weekly ($n=4$) at its own \emph{implied} volatility (the $\sigma$ that makes the BSM price equal the market price; $r=6\%$, no dividends), and divide the P\&L by the premium. The \emph{realised} volatility over the option's life is $\hat\sigma=\sqrt{\frac{1}{T_2-T_1}\sum_i[\ln S(t_{i+1})/S(t_i)]^2}$, which estimates $\sigma$ through quadratic variation. The matching simulations use $S_0=K=100$, $\alpha=r=6\%$, $T=20/252$ and $\sigma=14.8\%$, the sample's mean implied volatility, with the premium and Deltas at that $\sigma$; Heston uses the E3 settings ($\beta=2$, $\xi=0.4$, $\rho=-0.7$) with $V(0)=\sigma^2$ (E3 itself uses $\sigma=20\%$, $T=1$). Merton is not simulated here, because the jump parameters of E4 were chosen for one-year options and do not suit a 20-day window. One $\sigma$ is a simplification, because real windows range from calm to crisis; dividing by the premium, which grows roughly in proportion to $\sigma$ for an at-the-money option, puts them on one scale, and the comparison below removes the main regime effect.
-\end{itemize}
+GBM and Merton are sampled exactly. For Heston we use full-truncation Euler for the variance \cite{lord10} on a fine grid of 1{,}008 steps, subsampled to the hedging dates, with $\beta=2$, $a_V=0.08$, $V(0)=0.04$. Merton's diffusion variance is reduced so that total variance stays $0.04$, so differences from GBM come from the shape of the distribution, not its level. With 20{,}000 paths the Monte Carlo standard error (bootstrap over the paths) is about 0.7\% of the standard deviation and 1 to 2\% of the ES (Heston $\xi=0.4$: $1.95\pm0.014$ and $4.86\pm0.066$). The skewness is only good to $\pm0.04$ to $\pm0.09$ and the excess kurtosis to $\pm0.24$ (Heston) or $\pm1.3$ (Merton), so we do not read small differences in either.
 
-Code, tests, the notebook and the data notes (\texttt{data/SOURCE.md}) are in the submitted repository, and each experiment script regenerates its tables and figures.
+The seller receives $C(0,S_0)$, holds $\Delta(t_i)=C_x$ shares, and finances all trades and costs in the money market, so P\&L $=X(T)-(S(T)-K)^+$. We report the mean (the bias), the standard deviation, skewness, kurtosis, and the 5\% value-at-risk and expected shortfall (ES) of the loss.
+
+Prices of NIFTY index call options come from the NSE F\&O bhavcopy files for every trading day from January 2015 to November 2026 \cite{nse}, and the NIFTY~50 path from Yahoo Finance \cite{yahoo}. On each date with an NSE expiry exactly 20 trading days ahead, we sell the traded call nearest the money (strike within 1\% of spot) at its listed closing price, hedge it daily ($n=20$) or weekly ($n=4$) at its own \emph{implied} volatility (the $\sigma$ that makes the BSM price equal the market price; $r=6\%$, no dividends), and divide the P\&L by the premium. The \emph{realised} volatility over the option's life is $\hat\sigma=\sqrt{\frac{1}{T_2-T_1}\sum_i[\ln S(t_{i+1})/S(t_i)]^2}$, which estimates $\sigma$ through quadratic variation.
+
+The matching simulations use $S_0=K=100$, $\alpha=r=6\%$, $T=20/252$ and $\sigma=14.8\%$, the sample's mean implied volatility, with the premium and Deltas at that $\sigma$. Heston uses the settings of Section~\ref{sec:q3} ($\beta=2$, $\xi=0.4$, $\rho=-0.7$) with $V(0)=\sigma^2$ (that section itself uses $\sigma=20\%$, $T=1$). Merton is not simulated here: its jump parameters in Section~\ref{sec:q3} were chosen for one-year options and do not suit a 20-day window. A single $\sigma$ is a simplification, because real windows range from calm to crisis. Dividing by the premium, which grows roughly in proportion to $\sigma$ for an at-the-money option, puts them on one scale, and the comparison below removes the main regime effect.
+
+Code, tests, the notebook and the data notes are in the submitted repository, and each experiment script regenerates its tables and figures.
 
 %--------------------------------------------------------------------
 \section{Results}
 
-\subsection{Question 1: discrete rebalancing (E1, E6)}
+\subsection{Question 1: discrete rebalancing}
 
 The standard deviation of the P\&L falls from $3.22$ at $n=4$ to $0.218$ at $n=1000$. The log-log slope is $-0.487$ over all $n$ and $-0.500$ for $n\ge52$, matching $\sqrt{\Delta t}$, and the per-step formula predicts the spread within 1\% for $n\ge252$. The mean is about zero at every $n$, so the hedge is unbiased under the true model. The error follows the dollar gamma: with weekly hedging it peaks near $K=110$ ($1.02$, against $0.47$ at $K=80$).
 
-\subsection{Question 2: wrong volatility (E2)}
+\subsection{Question 2: wrong volatility}\label{sec:q2}
 
 \Needspace{7\baselineskip}
 The simulated mean P\&L of the seller agrees with the formula to within about one standard error:
@@ -133,14 +134,14 @@ A 25\% volatility error moves the mean P\&L by about 2 on a premium of $10.45$, 
   \centering
   \includegraphics[width=0.40\linewidth]{../results/figures/e1_rebalancing.png}\hfill
   \includegraphics[width=0.40\linewidth]{../results/figures/e2_mean_pnl.png}
-  \caption{Left, E1: standard deviation of the P\&L against $n$ (log-log), with the per-step formula and the $-1/2$ slope. Right, E2: simulated mean P\&L of the seller (95\% interval) against the formula.}
+  \caption{Left: standard deviation of the P\&L against $n$ (log-log), with the per-step formula and the $-1/2$ slope. Right: simulated mean P\&L of the seller (95\% interval) against the formula.}
   \label{fig:e1e2}
 \end{figure}
 
 \Needspace{9\baselineskip}
-\subsection{Question 3: wrong dynamics (E3, E4)}
+\subsection{Question 3: wrong dynamics}\label{sec:q3}
 
-Daily hedging ($n=252$), all rows at the same $n$:
+Daily hedging ($n=252$):
 
 \begin{center}\small
 \begin{tabular}{lccccc}
@@ -157,7 +158,7 @@ Merton $\lambda=0.5,\ m=-0.1$         & $0.106$ & $2.18$ & $-3.29$ & $15.3$ & $7
 
 Risk grows with the vol-of-vol and with the size and frequency of jumps, and it does not vanish as $n$ grows: for Heston ($\xi=0.4$) the standard deviation only drops from $2.83$ at $n=12$ to $1.91$ at $n=1008$, and for Merton it stops at $2.18$, while GBM falls to $0.22$. Correlation matters too: at $\xi=0.4$ the standard deviation is $1.48$ for $\rho=-0.9$ but $2.55$ for $\rho=0$, because strongly correlated variance shocks are partly hedged by the stock. Under jumps the short-gamma seller loses on big moves either way, giving the long left tail.
 
-\subsection{Question 4: transaction costs (E5)}
+\subsection{Question 4: transaction costs}
 
 The simulated cost matches Leland's formula within 2\%, and pricing at $\hat\sigma_L$ removes the cost bias. Minimising the root-mean-square error (RMSE) of the net P\&L over the grid of $n$ values 12, 26, 52, 78, 104, 156, 208, 252, 378, 504, 756 and 1000 gives $n^*=378,156,78,26$ for $k=0.001,0.0025,0.005,0.01$. The closed form $n^*=s/a$ gives $398,159,80,40$, so $n^*$ falls roughly like $1/k$ for small $k$; at $k=0.01$ the grid is coarse and the RMSE is flat near its minimum, and from $k=0.005$ to $0.01$ the simulated $n^*$ falls by a factor of 3, not 2. The optimum also depends on our choice of RMSE as the criterion.
 
@@ -165,7 +166,7 @@ The simulated cost matches Leland's formula within 2\%, and pricing at $\hat\sig
 \subsection{Comparison with real data: NIFTY 50 options (E7)}
 
 \Needspace{10\baselineskip}
-We obtain 372 windows between January 2015 and October 2026 (monthly expiries before 2019, weekly after; median premium 353 index points). P\&L divided by the premium:
+The backtest has 372 windows between January 2015 and October 2026 (monthly expiries before 2019, weekly after; median premium 353 index points). P\&L divided by the premium:
 
 \begin{center}\small
 \begin{tabular}{lccccc}
@@ -187,13 +188,13 @@ Heston, daily                   & $0.007$ & $0.226$ & $-0.84$ & $2.8$  & $0.57$ 
   \label{fig:e7}
 \end{figure}
 
-\textbf{Why the mean is positive.} Listed implied volatility averaged $14.8\%$, while NIFTY actually realised $13.5\%$, and implied was higher in 68\% of windows. A seller who charges for $14.8\%$ but faces $13.5\%$ gains, exactly as in the wrong-volatility result of E2. Applying the E2 formula window by window, with the realised volatility as $\sigma$ and the implied volatility as $\sigma_h$, gives an average of $23.0$ index points against $23.6$ observed, with correlation $0.87$.
+\textbf{Why the mean is positive.} Listed implied volatility averaged $14.8\%$, while NIFTY actually realised $13.5\%$, and implied was higher in 68\% of windows. A seller who charges for $14.8\%$ but faces $13.5\%$ gains, exactly as in the wrong-volatility result of Section~\ref{sec:q2}. Applying the wrong-volatility formula window by window, with the realised volatility as $\sigma$ and the implied volatility as $\sigma_h$, gives an average of $23.0$ index points against $23.6$ observed, with correlation $0.87$.
 
-\textbf{Is the extra spread a stochastic-volatility effect?} The raw P\&L is clearly larger and more skewed than GBM: for daily hedging the standard deviation is $0.247$ (95\% bootstrap interval $0.213$ to $0.280$) against $0.167$ for GBM, and the skewness is $-1.10$ ($-1.47$ to $-0.66$) against $-0.37$. This comparison is not like for like, however. Each real window is hedged at its own implied volatility, so windows differ in the gap between implied and realised volatility, and by E2 this adds spread and skew; the simulations hedge at the true $\sigma$ and have no such term. To remove it we use the exact version of the wrong-volatility formula, which weights each day's squared return by that day's dollar gamma:
+\textbf{Is the extra spread a stochastic-volatility effect?} The raw P\&L is clearly larger and more skewed than GBM: for daily hedging the standard deviation is $0.247$ (95\% bootstrap interval $0.213$ to $0.280$) against $0.167$ for GBM, and the skewness is $-1.10$ ($-1.47$ to $-0.66$) against $-0.37$. This comparison is not like for like, however. Each real window is hedged at its own implied volatility, so windows differ in the gap between implied and realised volatility, and by the wrong-volatility result this adds spread and skew; the simulations hedge at the true $\sigma$ and have no such term. To remove it we use the exact version of the wrong-volatility formula, which weights each day's squared return by that day's dollar gamma:
 \[
 \text{P\&L}\approx\tfrac12\sum_i e^{r(T-t_i)}\,S(t_i)^2C_{xx}(t_i,S(t_i))\Big[\sigma_h^2\Delta t_i-\Big(\ln\tfrac{S(t_{i+1})}{S(t_i)}\Big)^2\Big].
 \]
-The window-average $\hat\sigma$ used above is accurate only if the variance is spread evenly over the window. The entry of 26 February 2020 shows why it is not: the index crashed while the option was far out of the money, so its gamma was close to zero on the crash days and they cost little, yet the window-average formula predicts a loss of $3.6$ times the premium against an actual $0.44$. The gamma-weighted formula predicts $0.56$, and over all windows it raises the correlation with the real daily P\&L from $0.87$ to $0.95$ (average $23.7$ against $23.6$ index points observed). The table below applies it to the real windows and to the simulated paths.
+The window-average $\hat\sigma$ used above is accurate only if the variance is spread evenly over the window. The entry of 26 February 2020 shows why it is not: the index crashed while the option was far out of the money, so its gamma was close to zero on the crash days and they cost little, yet the window-average formula predicts a loss of $3.6$ times the premium against an actual $0.44$. The gamma-weighted formula predicts $0.56$, and over all windows it raises the correlation with the real daily P\&L from $0.87$ to $0.95$ (average $23.7$ against $23.6$ index points observed). We apply the same formula to the simulated paths and compare what is left.
 
 \begin{center}\small
 \begin{tabular}{lcc}
@@ -211,7 +212,7 @@ Heston (simulated)                     & $0.051$ & $0.141$ \\
 \end{tabular}
 \end{center}
 
-What is left is the higher-order error of a second-order formula, and it comes from large single-day moves. Without a daily move above 4\% (a threshold we chose; daily moves that large are 0.6\% of all days) the real residual is as small as GBM's, and the 17 windows with such a move have residuals about ten times larger. The result is similar for thresholds of 3\% and 5\% ($0.039$ and $0.061$ daily). Because the formula uses each path's own squared returns, it absorbs any volatility clustering and cannot separate Heston from GBM. So the real hedging error is larger and more skewed than GBM. A stochastic-volatility effect is consistent with this, but variation of volatility across windows also contributes, and the gamma-weighted wrong-volatility effect explains most of it; the rest comes from a few large daily moves.
+What is left is the higher-order error of a second-order formula, and it comes from large single-day moves. Without a daily move above 4\% (a threshold we chose; daily moves that large are 0.6\% of all days) the real residual is as small as GBM's, and the 17 windows with such a move have residuals about ten times larger. The result is similar for thresholds of 3\% and 5\% ($0.039$ and $0.061$ daily). Because the formula uses each path's own squared returns, it absorbs any volatility clustering and cannot separate Heston from GBM. So the real hedging error is larger and more skewed than GBM. A stochastic-volatility effect is consistent with this. But the gap between implied and realised volatility also varies from window to window, and the gamma-weighted wrong-volatility term explains most of the difference; the rest comes from a few large daily moves.
 
 %--------------------------------------------------------------------
 \section{Conclusions}
@@ -224,16 +225,16 @@ Question & Answer & Evidence \\
 \midrule
 1.\ Discrete rebalancing &
 Yes. The error is unbiased and its standard deviation scales like $\sqrt{\Delta t}=n^{-1/2}$, because $\mathrm{Var}[(\Delta W)^2]=2(\Delta t)^2$. &
-Slope $-0.50$; formula within 1\% (E1, E6) \\
+Slope $-0.50$; formula within 1\% \\
 2.\ Wrong volatility &
 Yes. The seller's discounted P\&L is $\tfrac12(\sigma_h^2-\sigma^2)\int_0^T e^{-rt}S^2C_{xx}\dd t$. &
-Simulated means match to about one standard error (E2) \\
+Simulated means match to about one standard error \\
 3.\ Wrong dynamics &
 Bias, variance and tail risk all grow, and the residual does not vanish with more frequent hedging, because the market is incomplete. &
-At $n=252$: Heston ($\xi=0.4$) std $1.95$ against $0.43$ for GBM, ES $4.86$ against $0.99$; Merton std $2.18$, ES $7.38$ (E3, E4) \\
+At $n=252$: Heston ($\xi=0.4$) std $1.95$ against $0.43$ for GBM, ES $4.86$ against $0.99$; Merton std $2.18$, ES $7.38$ \\
 4.\ Transaction costs &
 An interior optimal frequency exists; the cost matches Leland, and under RMSE $n^*$ falls roughly like $1/k$ for small $k$. &
-$n^*=378,156,78,26$ on a grid of 12 values from 12 to 1000; cost within 2\% (E5) \\
+$n^*=378,156,78,26$ on a grid of 12 values from 12 to 1000; cost within 2\% \\
 Real data &
 Larger and more skewed than GBM, mostly through the gamma-weighted wrong-volatility effect; the rest comes from a few large daily moves, and Heston and GBM cannot be separated. &
 372 windows; gamma-weighted formula correlation $0.95$; residual std $0.041$ without large moves, as for GBM (E7) \\
@@ -241,35 +242,33 @@ Larger and more skewed than GBM, mostly through the gamma-weighted wrong-volatil
 \end{tabularx}
 \end{center}
 
-\textbf{Limitations.} Prices are end-of-day closes, and older NSE files give no underlying price, so we keep strikes within 1\% of the NIFTY close. There are about 130 independent windows, only four of them from the 2020 crash, and the data cannot separate Heston from GBM. The rate is a constant 6\% and dividends are ignored. The Heston and Merton parameters are illustrative, not calibrated, and the optimal $n$ depends on the RMSE criterion.
-
 %--------------------------------------------------------------------
 \begin{thebibliography}{99}\scriptsize
 \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}
 
-\bibitem{bs73} Black, F.\ and Scholes, M.\ (1973). The pricing of options and corporate liabilities. \emph{Journal of Political Economy}, 81(3), 637--654.
+\bibitem{bs73} Black, F.\ and Scholes, M.\ (1973). The pricing of options and corporate liabilities. \emph{Journal of Political Economy}, 81(3), 637-654.
 
-\bibitem{merton73} Merton, R.C.\ (1973). Theory of rational option pricing. \emph{Bell Journal of Economics and Management Science}, 4(1), 141--183.
+\bibitem{merton73} Merton, R.C.\ (1973). Theory of rational option pricing. \emph{Bell Journal of Economics and Management Science}, 4(1), 141-183.
 
 \bibitem{hull} Hull, J.C.\ (2009). \emph{Options, Futures, and Other Derivatives}, 7th edition. Prentice-Hall.
 
 \bibitem{shreve2} Shreve, S.E.\ (2004). \emph{Stochastic Calculus for Finance II: Continuous-Time Models}. Springer.
 
-\bibitem{boyle80} Boyle, P.P.\ and Emanuel, D.\ (1980). Discretely adjusted option hedges. \emph{Journal of Financial Economics}, 8(3), 259--282.
+\bibitem{boyle80} Boyle, P.P.\ and Emanuel, D.\ (1980). Discretely adjusted option hedges. \emph{Journal of Financial Economics}, 8(3), 259-282.
 
-\bibitem{bkl00} Bertsimas, D., Kogan, L.\ and Lo, A.W.\ (2000). When is time continuous? \emph{Journal of Financial Economics}, 55(2), 173--204.
+\bibitem{bkl00} Bertsimas, D., Kogan, L.\ and Lo, A.W.\ (2000). When is time continuous? \emph{Journal of Financial Economics}, 55(2), 173-204.
 
-\bibitem{elk98} El Karoui, N., Jeanblanc-Picqu\'e, M.\ and Shreve, S.E.\ (1998). Robustness of the Black and Scholes formula. \emph{Mathematical Finance}, 8(2), 93--126.
+\bibitem{elk98} El Karoui, N., Jeanblanc-Picqu\'e, M.\ and Shreve, S.E.\ (1998). Robustness of the Black and Scholes formula. \emph{Mathematical Finance}, 8(2), 93-126.
 
-\bibitem{heston93} Heston, S.L.\ (1993). A closed-form solution for options with stochastic volatility with applications to bond and currency options. \emph{Review of Financial Studies}, 6(2), 327--343.
+\bibitem{heston93} Heston, S.L.\ (1993). A closed-form solution for options with stochastic volatility with applications to bond and currency options. \emph{Review of Financial Studies}, 6(2), 327-343.
 
-\bibitem{merton76} Merton, R.C.\ (1976). Option pricing when underlying stock returns are discontinuous. \emph{Journal of Financial Economics}, 3(1--2), 125--144.
+\bibitem{merton76} Merton, R.C.\ (1976). Option pricing when underlying stock returns are discontinuous. \emph{Journal of Financial Economics}, 3(1-2), 125-144.
 
-\bibitem{leland85} Leland, H.E.\ (1985). Option pricing and replication with transactions costs. \emph{Journal of Finance}, 40(5), 1283--1301.
+\bibitem{leland85} Leland, H.E.\ (1985). Option pricing and replication with transactions costs. \emph{Journal of Finance}, 40(5), 1283-1301.
 
-\bibitem{lord10} Lord, R., Koekkoek, R.\ and van Dijk, D.\ (2010). A comparison of biased simulation schemes for stochastic volatility models. \emph{Quantitative Finance}, 10(2), 177--194.
+\bibitem{lord10} Lord, R., Koekkoek, R.\ and van Dijk, D.\ (2010). A comparison of biased simulation schemes for stochastic volatility models. \emph{Quantitative Finance}, 10(2), 177-194.
 
-\bibitem{nse} National Stock Exchange of India. F\&O bhavcopy files, NIFTY index options, 2015--2026, \url{https://nsearchives.nseindia.com/}. Downloaded 15 November 2026.
+\bibitem{nse} National Stock Exchange of India. F\&O bhavcopy files, NIFTY index options, 2015 to 2026, \url{https://nsearchives.nseindia.com/}. Downloaded 15 November 2026.
 
 \bibitem{yahoo} Yahoo Finance. NIFTY~50 (\^{}NSEI) daily closes, retrieved with the \texttt{yfinance} Python library (v1.8.0) on 15 November 2026.
 

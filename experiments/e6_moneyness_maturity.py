@@ -1,4 +1,4 @@
-"""E6: hedging error against K and T, and its link to the gamma profile.
+"""Hedging error against K and T, and its link to the gamma profile.
 
 GBM paths, short call hedged weekly (dt = 1/52, so N = 52 T) with BSM Deltas at
 the true volatility. The simulated std of the P&L is compared with the std from
@@ -49,7 +49,7 @@ def run_case(K: float, T: float) -> tuple[dict, np.ndarray]:
 
 
 def main() -> None:
-    """Run E6, print and save the tables, save the three-panel figure."""
+    """Run the experiment: print and save the tables, save the three-panel figure."""
     strike_rows = [run_case(k, BASE_MATURITY)[0] for k in STRIKES]
     maturity_rows = [run_case(BASE_STRIKE, t)[0] for t in MATURITIES]
     strike_table, maturity_table = pd.DataFrame(strike_rows), pd.DataFrame(maturity_rows)

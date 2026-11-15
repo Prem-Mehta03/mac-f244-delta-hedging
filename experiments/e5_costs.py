@@ -1,4 +1,4 @@
-"""E5: proportional transaction costs, the optimal rebalancing frequency and Leland's scaling.
+"""Proportional transaction costs, the optimal rebalancing frequency and Leland's scaling.
 
 GBM paths, short at-the-money call hedged with BSM Deltas (20%) on N dates, for
 several round-trip cost rates k. Three things are measured:
@@ -35,7 +35,7 @@ SEED = 42
 
 
 def main() -> None:
-    """Run E5, print and save the tables, save the figures."""
+    """Run the experiment: print and save the tables, save the figures."""
     rows = []
     closed_form = {}
     for n_steps in STEP_COUNTS:
@@ -110,7 +110,7 @@ def main() -> None:
         line, = ax.semilogx(g["N"], g["rmse"], "o-", label=f"k = {k}")
         best = g.loc[g["rmse"].idxmin()]
         ax.plot(best["N"], best["rmse"], "*", ms=14, color=line.get_color())
-    ax.set(xlabel="rebalancing dates n", ylabel="RMSE of net P&L", title="E5: optimal rebalancing frequency (stars)")
+    ax.set(xlabel="rebalancing dates n", ylabel="RMSE of net P&L", title="Optimal rebalancing frequency (stars)")
     ax.legend()
     save_figure(fig, "e5_optimal_n")
 

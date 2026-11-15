@@ -1,4 +1,4 @@
-"""E4: delta hedging with BSM when the stock follows a Merton jump-diffusion.
+"""Delta hedging with BSM when the stock follows a Merton jump-diffusion.
 
 The diffusion volatility is lowered as jumps are added so that the total
 variance sigma_d^2 + lam (m^2 + delta^2) always equals 0.04, the BSM variance
@@ -48,7 +48,7 @@ def gbm_pnl(n_steps: int) -> np.ndarray:
 
 
 def main() -> None:
-    """Run E4, print and save the summary table, save the figures."""
+    """Run the experiment: print and save the summary table, save the figures."""
     scenarios = {"GBM": gbm_pnl(N_STEPS)}
     for rate in RATES:
         scenarios[f"lam={rate}, m={BASE_SIZE}"] = merton_pnl(rate, BASE_SIZE, N_STEPS)
@@ -81,7 +81,7 @@ def main() -> None:
     ax.set_xlim(-8, 6)
     ax.set_xlabel("P&L of the seller")
     ax.set_ylabel("density")
-    ax.set_title(f"E4: hedging P&L under Merton jumps, n = {N_STEPS}")
+    ax.set_title(f"Hedging P&L under Merton jumps, n = {N_STEPS}")
     ax.legend()
     save_figure(fig, "e4_distribution")
 
@@ -90,7 +90,7 @@ def main() -> None:
     ax.loglog(n_table["N"], n_table["merton_std"], "s-", label=f"Merton (lam={BASE_RATE}, m={BASE_SIZE})")
     ax.set_xlabel("rebalancing dates n")
     ax.set_ylabel("std of hedging P&L")
-    ax.set_title("E4: residual error does not vanish with jumps")
+    ax.set_title("Residual error does not vanish with jumps")
     ax.legend()
     save_figure(fig, "e4_std_vs_n")
 

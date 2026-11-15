@@ -6,7 +6,7 @@ own implied volatility along the real NIFTY 50 path until expiry (see
 src/backtest.py). The P&L is divided by the option premium. Its distribution
 is compared with GBM and Heston simulations at the sample's average
 implied volatility, hedged in the same way, and its mean is checked against
-the wrong-volatility formula of E2. A baseline hedges a synthetic at-the-money
+the wrong-volatility formula. A baseline hedges a synthetic at-the-money
 call priced at India VIX, on the same entry dates and on every trading day, to
 check how well that model-priced version reproduces the listed-option results.
 Finally the pathwise formula, which weights each day's squared return by that
@@ -53,8 +53,8 @@ def simulated_paths(sigma: float) -> dict[str, np.ndarray]:
 
     Both start at S_0 = K = 100, with alpha = r, T = 20/252 and total variance
     sigma^2 (the sample's mean implied volatility). Heston uses the settings of
-    E3: beta = 2, a_V = beta sigma^2, V(0) = sigma^2, xi = 0.4, rho = -0.7. The
-    Merton jump parameters of E4 were chosen for one-year options and do not
+    the Heston experiment: beta = 2, a_V = beta sigma^2, V(0) = sigma^2, xi = 0.4, rho = -0.7. The
+    Merton jump parameters of the jump experiment were chosen for one-year options and do not
     carry over to a 20-day window, so Merton is not simulated here.
     """
     T = N_DAYS / TRADING_DAYS
@@ -79,7 +79,7 @@ def simulated_rel_pnl(sigma: float, paths: dict[str, np.ndarray]) -> dict[str, d
 
 
 def e2_formula_pnl(data: pd.DataFrame, listed: pd.DataFrame, step: int) -> np.ndarray:
-    """The E2 formula (P&L at T) for each listed window, with its realised vol as sigma and its implied vol as sigma_h."""
+    """The wrong-volatility formula (P&L at T) for each listed window, with its realised vol as sigma and its implied vol as sigma_h."""
     T = N_DAYS / TRADING_DAYS
     windows = make_windows(data["nifty"].to_numpy(), N_DAYS)[data.index.get_indexer(listed.index)]
     return np.array([
@@ -160,7 +160,7 @@ def cost_table(data: pd.DataFrame, options: pd.DataFrame) -> pd.DataFrame:
     Rebalancing every 1, 2, 5 or 10 trading days gives N = 20, 10, 4 or 2 hedges
     in the 20-day life. For each round-trip cost rate k the table gives the mean
     total cost and the RMSE of the net P&L, both relative to the premium, which is
-    the real-data counterpart of the cost-risk trade-off in E5.
+    the real-data counterpart of the cost-risk trade-off in the simulations.
     """
     rows = []
     for k in [0.0] + COST_RATES:
@@ -209,7 +209,7 @@ def main() -> None:
           f"implied above realised in {(daily['implied_vol'] > daily['realised_vol']).mean():.1%} of windows")
 
     formula = e2_formula_pnl(data, daily, 1)
-    print(f"E2 formula (realised vol per window): mean {formula.mean():.2f} vs backtest {daily['pnl'].mean():.2f} points; "
+    print(f"Wrong-volatility formula (realised vol per window): mean {formula.mean():.2f} vs backtest {daily['pnl'].mean():.2f} points; "
           f"correlation {np.corrcoef(formula, daily['pnl'])[0, 1]:.3f}")
 
     print(f"VIX baseline on the {len(common)} listed entry dates: corr(listed implied vol, VIX) "

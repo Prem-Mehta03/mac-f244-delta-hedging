@@ -1,4 +1,4 @@
-"""E1: how the std of the hedging P&L shrinks with the number of rebalancing dates n.
+"""How the std of the hedging P&L shrinks with the number of rebalancing dates n.
 
 Simulates exact GBM, hedges a short at-the-money call with BSM Deltas, and
 fits log(std) = a + b log(N). Theory says b is close to -1/2. The std predicted
@@ -25,7 +25,7 @@ SEED = 42
 
 
 def main() -> None:
-    """Run E1, print the table and slope, save the table and the log-log figure."""
+    """Run the experiment: print the table and slope, save the table and the log-log figure."""
     rng = np.random.default_rng(SEED)
     rows = []
     for n_steps in STEP_COUNTS:
@@ -59,7 +59,7 @@ def main() -> None:
     ax.loglog(table["N"], np.exp(intercept) * table["N"] ** -0.5, ":", color="gray", label="slope -0.5")
     ax.set_xlabel("rebalancing dates n")
     ax.set_ylabel("std of hedging P&L")
-    ax.set_title("E1: hedging error vs rebalancing frequency (GBM)")
+    ax.set_title("Hedging error vs rebalancing frequency (GBM)")
     ax.legend()
     save_figure(fig, "e1_rebalancing")
 
