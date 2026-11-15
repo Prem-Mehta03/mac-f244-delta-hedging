@@ -38,6 +38,6 @@ python experiments/e1_rebalancing.py
 
 Each experiment script saves its figure and table under `results/`. Random seeds are fixed, so results are reproducible.
 
-`notebooks/final_notebook.ipynb` re-runs every experiment from top to bottom (about 3 minutes) with the figures, tables and interpretations inline. Open it in Jupyter or VS Code and run all cells.
+`notebooks/final_notebook.ipynb` is self-contained (code, a compact extract of the data and all results are inside it, so it can be sent on its own) and re-runs every experiment from top to bottom (about 10 minutes) with the figures, tables and interpretations inline. Open it in Jupyter or VS Code and run all cells.
 
 The report is `report/report.tex`; `pdflatex report.tex`, run twice from inside `report/`, rebuilds `report/report.pdf`.
